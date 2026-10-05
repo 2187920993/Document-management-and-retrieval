@@ -1,0 +1,9 @@
+{
+  "name": "file-knowledge-platform",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "dev": "vite --host 0.0.0.0", "build": "vite build", "preview": "vite preview --host 0.0.0.0" },
+  "dependencies": { "@embedpdf/pdfium": "^2.15.1", "@vitejs/plugin-react": "latest", "vite": "latest", "react": "latest", "react-dom": "latest", "xlsx": "^0.18.5", "pptxjs": "npm:pptx-viewer@^0.2.2" },
+  "devDependencies": {}
+}

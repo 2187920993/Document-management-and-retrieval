@@ -1,0 +1,62 @@
+name: documents_workspace
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: files
+      POSTGRES_USER: files
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-files_dev_only}
+    volumes:
+      - ${POSTGRES_HOST_PATH:-./runtime/postgres}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U files -d files"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://files:${POSTGRES_PASSWORD:-files_dev_only}@db:5432/files
+      POSTGRES_HOST_PATH: ${POSTGRES_HOST_PATH:-./runtime/postgres}
+      PROJECT_ROOT: /project
+      STORAGE_DIR: /app/storage
+      STORAGE_HOST_PATH: ${STORAGE_HOST_PATH:-./runtime/storage}
+      MAX_FILE_BYTES: ${MAX_FILE_BYTES:-20971520}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      EMBEDDING_API_URL: ${EMBEDDING_API_URL:-}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      STORAGE_LAYOUT: ${STORAGE_LAYOUT:-flat}
+    volumes:
+      - ${STORAGE_HOST_PATH:-./runtime/storage}:/app/storage
+      - .:/project
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: postgresql://files:${POSTGRES_PASSWORD:-files_dev_only}@db:5432/files
+      POSTGRES_HOST_PATH: ${POSTGRES_HOST_PATH:-./runtime/postgres}
+      STORAGE_DIR: /app/storage
+      STORAGE_HOST_PATH: ${STORAGE_HOST_PATH:-./runtime/storage}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      EMBEDDING_API_URL: ${EMBEDDING_API_URL:-}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      STORAGE_LAYOUT: ${STORAGE_LAYOUT:-flat}
+    volumes:
+      - ${STORAGE_HOST_PATH:-./runtime/storage}:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api

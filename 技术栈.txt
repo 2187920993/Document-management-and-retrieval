@@ -1,0 +1,66 @@
+操作系统	Windows 10/11 64 位	本地运行环境
+容器	Docker Desktop、Docker Compose V2、WSL2	服务部署与隔离
+启动脚本	Windows Batch .bat	启动、关闭、环境检测和迁移监视
+前端框架	React、ReactDOM	页面交互和组件管理
+前端构建	Vite、@vitejs/plugin-react	开发和生产构建
+页面样式	原生 CSS、响应式 CSS	自适应布局、主题、动效
+Web 服务器	Nginx 1.27 Alpine	托管前端静态文件
+后端语言	Python 3.12	API、索引和文件处理
+后端框架	FastAPI 0.115.6	REST API 和 OpenAPI 文档
+ASGI 服务	Uvicorn 0.34.0	运行 FastAPI
+数据库	PostgreSQL 16 Alpine	文件元数据、分类、索引任务和向量存储
+数据库驱动	psycopg 3.2.3	Python 连接 PostgreSQL
+数据库备用方案	SQLite	非 Docker 或测试环境备用
+数据访问	原生 SQL	当前未使用 ORM
+后台任务	自定义 Python Worker	异步索引和向量生成
+上传处理	python-multipart	单文件和批量文件上传
+数值计算	NumPy 2.2.2	向量计算和相似度处理
+
+
+检索与索引技术：
+技术	实现
+文档解析	TXT、Markdown、CSV、JSON、YAML、XML、HTML、代码文件等文本读取
+PDF 解析	pypdf 5.1.0
+Word 解析	python-docx 1.1.2
+PPT/PPTX 解析	python-pptx 1.0.2
+Excel XLSX 解析	openpyxl 3.1.5
+Excel XLS 解析	xlrd 2.0.1
+Chunk 分段	按段落分组、长度限制和重叠窗口切分
+Embedding	本地 384 维确定性文本向量
+向量存储	PostgreSQL JSONB，存储在 document_chunks.vector
+向量相似度	Cosine Similarity
+向量召回	持久化向量 Top-K cosine 候选召回
+BM25	后端自实现 BM25 关键词召回
+RRF	Reciprocal Rank Fusion，融合向量排名和 BM25 排名
+Reranker	本地规则重排，综合向量、BM25、RRF、标题命中和完整短语
+语义扩展	中文短语、同义词、反向词序和主题特征扩展
+联网模型	支持 OpenAI-compatible Embeddings API
+容错机制	联网模型失败时回退本地向量
+结果输出	来源文件、文件类型、相关度、正文片段和高亮
+
+
+文件预览技术：
+- PDFium WebAssembly：PDF 原文渲染。
+- @embedpdf/pdfium：加载 PDFium WASM。
+- SheetJS xlsx：Excel 浏览器端解析和预览。
+- pptx-viewer：PPTX 浏览器端预览，通过 pptxjs npm 别名使用。
+- DOCX、HTML、PDF、PPTX、XLS/XLSX：支持富文本或原文预览，并可切换纯文本。
+数据和持久化：
+- runtime/postgres：PostgreSQL 持久化目录。
+- runtime/storage：上传文件和分类目录。
+- runtime/ui-background：背景图片。
+- Docker Bind Mount：将容器数据映射到主机。
+- .env：自定义数据库和文档目录。
+- 网页设置：支持迁移数据库目录、文档目录和背景目录。
+- 文件状态扫描：检查文件是否被外部删除。
+- 索引状态管理：待处理、处理中、可检索、失败、未建立索引。
+
+
+当前没有使用：
+- Redis；
+- Celery；
+- Elasticsearch；
+- 独立向量数据库；
+- ORM；
+- 专用 HNSW/FAISS/pgvector ANN 索引。
+当前向量召回使用 PostgreSQL 中持久化的向量进行 Top-K cosine 候选计算，BM25、RRF 和本地重排已经实际接入。
